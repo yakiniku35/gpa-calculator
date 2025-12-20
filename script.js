@@ -266,10 +266,7 @@ function changeLanguage(lang) {
     }
 }
 
-// Initialize
-document.addEventListener('DOMContentLoaded', () => {
-    // Language modal is shown by default, user selects language to continue
-});
+
 
 function setupEventListeners() {
     document.getElementById('btn43').addEventListener('click', () => switchSystem('4.3'));
