@@ -1,0 +1,113 @@
+/* Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* Base Styles */
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Apple Card Style */
+.apple-card {
+    background: #FFFFFF;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 2px 16px rgba(0, 0, 0, 0.06);
+}
+
+/* Apple Input Style */
+.apple-input {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 42px;
+}
+
+.apple-input:focus {
+    box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+}
+
+/* Apple Button Style */
+.apple-button {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.apple-button:active {
+    transform: scale(0.96);
+}
+
+/* Fade In Animation */
+.fade-in {
+    animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeIn {
+    from { 
+        opacity: 0; 
+        transform: translateY(-8px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
+
+/* Divider */
+.divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, #E5E7EB 20%, #E5E7EB 80%, transparent);
+}
+
+/* Language Toggle */
+.language-toggle {
+    z-index: 1000;
+}
+
+/* Language toggle button - responsive */
+@media (max-width: 640px) {
+    .fixed.top-4.left-4 {
+        top: 0.5rem;
+        left: 0.5rem;
+    }
+}
+
+/* Smooth transitions */
+#languageMenu {
+    transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+#languageMenu.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+#languageMenu:not(.hidden) {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+    /* Ensure content doesn't overlap with language toggle */
+    .max-w-7xl {
+        padding-top: 1rem;
+    }
+    
+    /* Better spacing for mobile cards */
+    .apple-card {
+        border-radius: 12px;
+    }
+    
+    /* Improve button sizes for touch */
+    .apple-button {
+        min-height: 44px;
+    }
+    
+    /* Better table display on mobile */
+    table {
+        font-size: 0.813rem;
+    }
+    
+    /* Course card improvements */
+    .space-y-3 > * {
+        margin-top: 0.75rem;
+    }
+}
