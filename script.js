@@ -514,8 +514,9 @@ function calculate() {
 
 function exportToPDF() {
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
     const language = document.getElementById('pdfLanguage').value;
+    
+    const doc = new jsPDF();
     
     // 語言文本定義
     const text = {
@@ -557,49 +558,74 @@ function exportToPDF() {
         }
     };
     
-    // 設置字體
-    doc.setFont("helvetica");
+    // 使用 Courier 字體作為英文基礎字體
+    doc.setFont("courier");
     
-    // 標題
+    // 添加藍色標題背景
+    doc.setFillColor(59, 130, 246);
+    doc.rect(0, 0, 210, 35, 'F');
+    
+    // 標題 (白色字)
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("courier", "bold");
     if (language === 'both') {
-        doc.setFontSize(20);
+        doc.setFontSize(22);
+        doc.text('GPA Report', 105, 15, { align: 'center' });
+        doc.setFontSize(18);
+        // 雙語模式用拼音代替
+        doc.text('Xuesheng Chengji Baogao', 105, 25, { align: 'center' });
+    } else if (language === 'en') {
+        doc.setFontSize(22);
+        doc.text(text[language].title, 105, 20, { align: 'center' });
+    } else {
+        // 純中文使用英文標題 + 拼音
+        doc.setFontSize(22);
         doc.text('GPA Report', 105, 15, { align: 'center' });
         doc.setFontSize(16);
-        doc.text('學期成績報告', 105, 23, { align: 'center' });
-    } else {
-        doc.setFontSize(20);
-        doc.text(text[language].title, 105, 20, { align: 'center' });
+        doc.text('(Chengji Baogao)', 105, 23, { align: 'center' });
     }
     
-    // 日期
+    // 重置文字顏色
+    doc.setTextColor(0, 0, 0);
+    doc.setFont("courier", "normal");
+    
+    // 日期和系統資訊區域
     doc.setFontSize(10);
-    const today = new Date().toLocaleDateString('zh-TW', { 
+    const today = new Date().toLocaleDateString(language === 'zh' ? 'zh-TW' : 'en-US', { 
         year: 'numeric', 
         month: 'long', 
         day: 'numeric' 
     });
     
+    // 資訊框
+    doc.setFillColor(248, 250, 252);
+    doc.roundedRect(15, 40, 180, 18, 2, 2, 'F');
+    
+    doc.setFontSize(10);
+    doc.setTextColor(75, 85, 99);
+    
     if (language === 'both') {
-        doc.text(`Date / 日期: ${today}`, 105, 32, { align: 'center' });
+        doc.text(`Date / Riqi: ${today}`, 20, 48);
+    } else if (language === 'en') {
+        doc.text(`${text[language].date}: ${today}`, 20, 48);
     } else {
-        doc.text(`${text[language].date}: ${today}`, 105, 32, { align: 'center' });
+        doc.text(`Riqi: ${today}`, 20, 48);
     }
     
     // 學分制版本
-    doc.setFontSize(12);
     const systemText = currentSystem === '4.3' ? 
-        (language === 'both' ? '4.3 Scale / 4.3 學分制' : text[language].scale43) :
-        (language === 'both' ? '4.0 Scale / 4.0 學分制' : text[language].scale40);
+        (language === 'both' ? '4.3 Scale / 4.3 Xuefen Zhi' : language === 'en' ? text[language].scale43 : '4.3 Xuefen Zhi') :
+        (language === 'both' ? '4.0 Scale / 4.0 Xuefen Zhi' : language === 'en' ? text[language].scale40 : '4.0 Xuefen Zhi');
     
     if (language === 'both') {
-        doc.text(`Grading System / 計分制度: ${systemText}`, 20, 42);
+        doc.text(`Grading System / Jifen Zhidu: ${systemText}`, 20, 54);
+    } else if (language === 'en') {
+        doc.text(`${text[language].system}: ${systemText}`, 20, 54);
     } else {
-        doc.text(`${text[language].system}: ${systemText}`, 20, 42);
+        doc.text(`Jifen Zhidu: ${systemText}`, 20, 54);
     }
     
-    // 分隔線
-    doc.setLineWidth(0.5);
-    doc.line(20, 47, 190, 47);
+    doc.setTextColor(0, 0, 0);
     
     // 課程表格數據
     const tableData = courses
@@ -634,28 +660,74 @@ function exportToPDF() {
     // 如果沒有課程資料
     if (tableData.length === 0) {
         doc.setFontSize(12);
-        doc.setTextColor(150, 150, 150);
+        doc.setFont("courier", "normal");
+        doc.setTextColor(156, 163, 175);
+        
+        // 添加圖示
+        doc.setFontSize(40);
+        doc.text('[ ]', 105, 100, { align: 'center' });
+        
+        doc.setFontSize(14);
+        doc.setTextColor(107, 114, 128);
         if (language === 'both') {
-            doc.text('No course data available', 105, 80, { align: 'center' });
-            doc.text('尚無課程資料', 105, 90, { align: 'center' });
+            doc.text('No course data available', 105, 120, { align: 'center' });
+            doc.text('Shang wu kecheng ziliao', 105, 130, { align: 'center' });
+        } else if (language === 'en') {
+            doc.text(text[language].noData, 105, 125, { align: 'center' });
         } else {
-            doc.text(text[language].noData, 105, 85, { align: 'center' });
+            doc.text('Shang wu kecheng ziliao', 105, 125, { align: 'center' });
         }
-        doc.save(`GPA_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+        
+        // 頁尾
+        doc.setFontSize(7);
+        doc.setTextColor(156, 163, 175);
+        doc.setDrawColor(229, 231, 235);
+        doc.setLineWidth(0.3);
+        doc.line(20, 280, 190, 280);
+        
+        if (language === 'both') {
+            doc.text('Generated by GPA Calculator', 105, 285, { align: 'center' });
+            doc.text('You GPA Jisuanqi Shengcheng', 105, 289, { align: 'center' });
+        } else if (language === 'en') {
+            doc.text(`${text[language].footer}`, 105, 287, { align: 'center' });
+        } else {
+            doc.text('You GPA Jisuanqi Shengcheng', 105, 287, { align: 'center' });
+        }
+        
+        const fileName = `GPA_Report_${new Date().toISOString().split('T')[0]}.pdf`;
+        try {
+            doc.save(fileName);
+            showNotification(language === 'zh' ? 'PDF yi chenggong dachu!' : 'PDF exported successfully!', 'success');
+        } catch (error) {
+            console.error('PDF export error:', error);
+            showNotification(language === 'zh' ? 'PDF dachu shibai' : 'PDF export failed', 'error');
+        }
         return;
+    }
+    
+    // 課程表格標題
+    doc.setFontSize(14);
+    doc.setFont("courier", "bold");
+    doc.setTextColor(31, 41, 55);
+    if (language === 'both') {
+        doc.text('Course List / Kecheng Liebiao', 20, 67);
+    } else if (language === 'en') {
+        doc.text('Course List', 20, 67);
+    } else {
+        doc.text('Kecheng Liebiao', 20, 67);
     }
     
     // 繪製課程表格
     let tableHeaders;
     if (language === 'both') {
         tableHeaders = [[
-            'Course Name\n課程名稱', 
-            'Credits\n學分', 
-            'Grade\n成績', 
-            'GP\n績點', 
-            'Weighted\n加權分數'
+            'Course Name\nKecheng Mingcheng', 
+            'Credits\nXuefen', 
+            'Grade\nChengji', 
+            'GP\nJidian', 
+            'Weighted\nJiaquan Fenshu'
         ]];
-    } else {
+    } else if (language === 'en') {
         tableHeaders = [[
             text[language].courseName,
             text[language].credits,
@@ -663,22 +735,33 @@ function exportToPDF() {
             text[language].gp,
             text[language].weighted
         ]];
+    } else {
+        tableHeaders = [[
+            'Kecheng',
+            'Xuefen',
+            'Chengji',
+            'Jidian',
+            'Jiaquan'
+        ]];
     }
     
     doc.autoTable({
-        startY: 52,
+        startY: 72,
         head: tableHeaders,
         body: tableData,
-        theme: 'grid',
+        theme: 'striped',
         headStyles: {
             fillColor: [59, 130, 246],
+            textColor: [255, 255, 255],
             fontStyle: 'bold',
             halign: 'center',
             fontSize: language === 'both' ? 9 : 10,
-            cellPadding: 3
+            cellPadding: 5,
+            lineWidth: 0.1,
+            lineColor: [200, 200, 200]
         },
         columnStyles: {
-            0: { cellWidth: 70 },
+            0: { cellWidth: 70, halign: 'left' },
             1: { halign: 'center', cellWidth: 25 },
             2: { halign: 'center', cellWidth: 30 },
             3: { halign: 'center', cellWidth: 25 },
@@ -686,80 +769,156 @@ function exportToPDF() {
         },
         styles: {
             fontSize: 10,
-            cellPadding: 4
-        }
+            cellPadding: 4,
+            lineWidth: 0.1,
+            lineColor: [220, 220, 220],
+            font: "courier"
+        },
+        alternateRowStyles: {
+            fillColor: [248, 250, 252]
+        },
+        margin: { left: 15, right: 15 }
     });
     
     // 計算結果
-    const finalY = doc.lastAutoTable.finalY + 12;
+    let finalY = doc.lastAutoTable.finalY + 15;
     
-    // 結果區塊背景
-    doc.setFillColor(249, 250, 251);
-    doc.roundedRect(20, finalY, 170, 50, 3, 3, 'F');
+    // 檢查是否需要新頁面
+    if (finalY > 230) {
+        doc.addPage();
+        finalY = 20;
+    }
     
-    // 結果標題
+    // 結果區塊標題
     doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(0, 0, 0);
+    doc.setFont("courier", "bold");
+    doc.setTextColor(31, 41, 55);
     if (language === 'both') {
-        doc.text('Summary / 計算結果', 105, finalY + 10, { align: 'center' });
+        doc.text('Summary / Jisuan Jieguo', 20, finalY);
+    } else if (language === 'en') {
+        doc.text(`${text[language].summary}`, 20, finalY);
     } else {
-        doc.text(text[language].summary, 105, finalY + 10, { align: 'center' });
+        doc.text('Jisuan Jieguo', 20, finalY);
     }
     
-    // 分隔線
-    doc.setLineWidth(0.3);
-    doc.setDrawColor(200, 200, 200);
-    doc.line(30, finalY + 13, 180, finalY + 13);
+    // 結果卡片
+    const cardY = finalY + 5;
     
-    // 總學分
-    doc.setFontSize(11);
-    doc.setFont("helvetica", "bold");
-    if (language === 'both') {
-        doc.text('Total Credits / 總學分:', 35, finalY + 23);
-    } else {
-        doc.text(text[language].totalCredits + ':', 35, finalY + 23);
-    }
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(12);
-    doc.text(document.getElementById('totalCredits').textContent, 95, finalY + 23);
+    // 總學分卡片
+    doc.setFillColor(243, 244, 246);
+    doc.roundedRect(15, cardY, 58, 32, 3, 3, 'F');
+    doc.setDrawColor(229, 231, 235);
+    doc.setLineWidth(0.5);
+    doc.roundedRect(15, cardY, 58, 32, 3, 3, 'S');
     
-    // 加權總分
-    doc.setFontSize(11);
-    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.setFont("courier", "normal");
+    doc.setTextColor(107, 114, 128);
     if (language === 'both') {
-        doc.text('Weighted Sum / 加權總分:', 35, finalY + 33);
+        doc.text('Total Credits', 44, cardY + 8, { align: 'center' });
+        doc.text('Zong Xuefen', 44, cardY + 13, { align: 'center' });
+    } else if (language === 'en') {
+        doc.text(text[language].totalCredits, 44, cardY + 10, { align: 'center' });
     } else {
-        doc.text(text[language].weightedSum + ':', 35, finalY + 33);
-    }
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(12);
-    doc.text(document.getElementById('weightedSum').textContent, 95, finalY + 33);
-    
-    // 平均 GPA
-    doc.setFontSize(11);
-    doc.setFont("helvetica", "bold");
-    if (language === 'both') {
-        doc.text('Average GPA / 平均績點:', 35, finalY + 43);
-    } else {
-        doc.text(text[language].averageGPA + ':', 35, finalY + 43);
+        doc.text('Zong Xuefen', 44, cardY + 10, { align: 'center' });
     }
     doc.setFontSize(16);
-    doc.setFont("helvetica", "bold");
+    doc.setFont("courier", "bold");
+    doc.setTextColor(31, 41, 55);
+    doc.text(document.getElementById('totalCredits').textContent, 44, cardY + 24, { align: 'center' });
+    
+    // 加權總分卡片
+    doc.setFillColor(243, 244, 246);
+    doc.roundedRect(76, cardY, 58, 32, 3, 3, 'F');
+    doc.setDrawColor(229, 231, 235);
+    doc.roundedRect(76, cardY, 58, 32, 3, 3, 'S');
+    
+    doc.setFontSize(9);
+    doc.setFont("courier", "normal");
+    doc.setTextColor(107, 114, 128);
+    if (language === 'both') {
+        doc.text('Weighted Sum', 105, cardY + 8, { align: 'center' });
+        doc.text('Jiaquan Zongfen', 105, cardY + 13, { align: 'center' });
+    } else if (language === 'en') {
+        doc.text(text[language].weightedSum, 105, cardY + 10, { align: 'center' });
+    } else {
+        doc.text('Jiaquan Zongfen', 105, cardY + 10, { align: 'center' });
+    }
+    doc.setFontSize(16);
+    doc.setFont("courier", "bold");
+    doc.setTextColor(31, 41, 55);
+    doc.text(document.getElementById('weightedSum').textContent, 105, cardY + 24, { align: 'center' });
+    
+    // 平均 GPA 卡片 (藍色高亮)
+    doc.setFillColor(239, 246, 255);
+    doc.roundedRect(137, cardY, 58, 32, 3, 3, 'F');
+    doc.setDrawColor(191, 219, 254);
+    doc.setLineWidth(1);
+    doc.roundedRect(137, cardY, 58, 32, 3, 3, 'S');
+    
+    doc.setFontSize(9);
+    doc.setFont("courier", "normal");
     doc.setTextColor(59, 130, 246);
-    doc.text(document.getElementById('averageGPA').textContent, 95, finalY + 43);
+    if (language === 'both') {
+        doc.text('Average GPA', 166, cardY + 8, { align: 'center' });
+        doc.text('Pingjun Jidian', 166, cardY + 13, { align: 'center' });
+    } else if (language === 'en') {
+        doc.text(text[language].averageGPA, 166, cardY + 10, { align: 'center' });
+    } else {
+        doc.text('Pingjun Jidian', 166, cardY + 10, { align: 'center' });
+    }
+    doc.setFontSize(18);
+    doc.setFont("courier", "bold");
+    doc.setTextColor(37, 99, 235);
+    doc.text(document.getElementById('averageGPA').textContent, 166, cardY + 24, { align: 'center' });
     
     // 頁尾
-    doc.setFontSize(8);
-    doc.setTextColor(150, 150, 150);
+    doc.setFontSize(7);
+    doc.setFont("courier", "normal");
+    doc.setTextColor(156, 163, 175);
+    
+    // 添加分隔線
+    doc.setDrawColor(229, 231, 235);
+    doc.setLineWidth(0.3);
+    doc.line(20, 280, 190, 280);
+    
     if (language === 'both') {
         doc.text('Generated by GPA Calculator', 105, 285, { align: 'center' });
-        doc.text('由 GPA 計算機生成', 105, 290, { align: 'center' });
+        doc.text('You GPA Jisuanqi Shengcheng', 105, 289, { align: 'center' });
+    } else if (language === 'en') {
+        doc.text(`${text[language].footer}`, 105, 287, { align: 'center' });
     } else {
-        doc.text(text[language].footer, 105, 287, { align: 'center' });
+        doc.text('You GPA Jisuanqi Shengcheng', 105, 287, { align: 'center' });
     }
     
-    // 儲存 PDF
+    // 顯示成功訊息
     const fileName = `GPA_Report_${new Date().toISOString().split('T')[0]}.pdf`;
-    doc.save(fileName);
+    
+    try {
+        doc.save(fileName);
+        
+        // 顯示成功提示
+        showNotification(language === 'zh' ? 'PDF yi chenggong dachu!' : 'PDF exported successfully!', 'success');
+    } catch (error) {
+        console.error('PDF export error:', error);
+        showNotification(language === 'zh' ? 'PDF dachu shibai, qing chongshi' : 'PDF export failed, please try again', 'error');
+    }
+}
+
+// 顯示通知訊息
+function showNotification(message, type = 'success') {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-20 right-4 px-6 py-3 rounded-xl shadow-lg text-white font-semibold text-sm z-50 fade-in ${
+        type === 'success' ? 'bg-green-500' : 'bg-red-500'
+    }`;
+    notification.textContent = message;
+    notification.style.animation = 'fadeIn 0.3s ease-in-out';
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transition = 'opacity 0.3s ease-in-out';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
 }
