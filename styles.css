@@ -87,7 +87,7 @@ body {
 /* Mobile optimizations */
 @media (max-width: 768px) {
     /* Ensure content doesn't overlap with language toggle */
-    .max-w-7xl {
+    #mainContent {
         padding-top: 1rem;
     }
     

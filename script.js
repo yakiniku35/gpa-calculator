@@ -157,7 +157,7 @@ function renderPage() {
         <!-- Main Layout: Left Grading Scale + Right Course Input -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 mb-4 sm:mb-6">
             <!-- Left: Grading Scale Reference -->
-            <div class="lg:col-span-4">
+            <div class="lg:col-span-3">
                 <div class="apple-card p-4 sm:p-6 lg:sticky lg:top-6">
                     <h2 class="text-base sm:text-lg font-semibold text-gray-900 mb-4 sm:mb-5 tracking-tight">${t.gradingStandard}</h2>
                     <div id="gradeTable" class="overflow-x-auto"></div>
@@ -165,7 +165,7 @@ function renderPage() {
             </div>
 
             <!-- Right: Course Input Section -->
-            <div class="lg:col-span-8">
+            <div class="lg:col-span-9">
                 <div class="apple-card p-4 sm:p-6 md:p-8 mb-4 sm:mb-6">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
                         <h2 class="text-base sm:text-lg font-semibold text-gray-900 tracking-tight">${t.courseList}</h2>
@@ -301,8 +301,9 @@ function updateGradeTable() {
     const t = translations[currentLanguage];
     const table = document.getElementById('gradeTable');
     const grades = gradingSystem[currentSystem];
-    
-    let html = `
+
+    // Full table for mobile/tablet
+    let fullTable = `
         <table class="w-full text-sm">
             <thead>
                 <tr class="border-b border-gray-200">
@@ -314,10 +315,9 @@ function updateGradeTable() {
             </thead>
             <tbody class="divide-y divide-gray-100">
     `;
-    
     grades.forEach((g) => {
         const range = g.grade === 'X' ? 'N/A' : `${g.min}-${g.max}`;
-        html += `
+        fullTable += `
             <tr class="hover:bg-gray-50 transition-colors">
                 <td class="px-4 py-3 text-gray-600">${range}</td>
                 <td class="px-4 py-3">
@@ -328,13 +328,24 @@ function updateGradeTable() {
             </tr>
         `;
     });
-    
-    html += `
-            </tbody>
-        </table>
+    fullTable += `</tbody></table>`;
+
+    // Compact 2-column grid for desktop (lg+)
+    const compactItems = grades.map(g => {
+        const range = g.grade === 'X' ? 'N/A' : `${g.min}-${g.max}`;
+        return `
+            <div class="flex items-center gap-1.5 px-2 py-1.5 hover:bg-gray-50 rounded-lg transition-colors">
+                <span class="inline-flex items-center justify-center w-9 h-6 rounded-md text-xs font-semibold bg-gray-100 text-gray-800 flex-shrink-0">${g.grade}</span>
+                <span class="text-xs text-gray-400 flex-1">${range}</span>
+                <span class="text-xs font-bold text-gray-900">${g.gp}</span>
+            </div>
+        `;
+    }).join('');
+
+    table.innerHTML = `
+        <div class="lg:hidden">${fullTable}</div>
+        <div class="hidden lg:grid lg:grid-cols-2 gap-0.5">${compactItems}</div>
     `;
-    
-    table.innerHTML = html;
 }
 
 function addCourse() {
