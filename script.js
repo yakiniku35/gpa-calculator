@@ -332,7 +332,7 @@ function updateGradeTable() {
 
     // Compact 2-column grid for desktop (lg+)
     const compactItems = grades.map(g => {
-        const range = g.grade === 'X' ? 'N/A' : `${g.min}–${g.max}`;
+        const range = g.grade === 'X' ? 'N/A' : `${g.min}-${g.max}`;
         return `
             <div class="flex items-center gap-1.5 px-2 py-1.5 hover:bg-gray-50 rounded-lg transition-colors">
                 <span class="inline-flex items-center justify-center w-9 h-6 rounded-md text-xs font-semibold bg-gray-100 text-gray-800 flex-shrink-0">${g.grade}</span>
